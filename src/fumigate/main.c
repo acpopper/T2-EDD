@@ -80,16 +80,33 @@ int destroy_table(Subimagen** table, int len){
 }
 
 
-int hash_func(int key, int table_size) {
+int hash_func(int pos, int size, Subimagen** hash_table, int table_size) {
+  int key = pos*size; // OBIAMENTE EDITAR ESTA WEA CON LA HASH FUNC CORRECTA
   return key % table_size;
 }
 
+bool mismo_patron(int pos1, int size1, int pos2, int size2){
+  return true;
+}
 
-void insert(int key, Subimagen** hash_table, int table_size) {
-  int hashIndex = hash_func(key, table_size);
-	
-  // logica de inserción
-  
+void insert(int pos, int size, Subimagen** hash_table, int table_size) {
+  int hashIndex = hash_func(pos, size, hash_table, table_size);
+  // Si no hay nada en esa posición, se crea un nodo y se apunta a el
+  if(!hash_table[hashIndex]){
+    Subimagen* new = subimagen_init(pos, size);
+    hash_table[hashIndex] = new;
+  } // Si hay un nodo, se revisa si es el mismo patrón o si cayó ahí por la función. Dependiendo de eso cómo se agrega.
+  else {
+    Subimagen* current = hash_table[hashIndex];
+    while(current){
+      if(mismo_patron(pos, size, current->pos, current->size)){
+        append_to_list(hash_table[hashIndex], pos, size);
+        return 0;
+      }
+      current=current->skip;
+    }
+    append_to_skip(current, pos, size);
+  } 
 }
 
 int main(int argc, char** argv)
