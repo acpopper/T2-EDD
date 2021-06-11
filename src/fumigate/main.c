@@ -8,6 +8,8 @@
 #define WHITE 127
 #define GRAY 64
 
+#define LUCKY_NUMBER 13
+
 struct subimagen;
 typedef struct subimagen Subimagen;
 
@@ -30,7 +32,6 @@ Subimagen* subimagen_init(int pos, int size){
   return subimagen;
 }
 
-
 void list_print(Subimagen* subimagen){
   printf("pos %i, size %i -> ", subimagen->pos, subimagen->size);
   if (!subimagen->next){
@@ -41,13 +42,13 @@ void list_print(Subimagen* subimagen){
   }
 }
 
-void add_to_list(Subimagen* first, int pos, int size){
+void append_to_list(Subimagen* first, int pos, int size){
   Subimagen* second = list_init(pos, size);
   second->next=first->next;
   first->next=second;
 }
 
-void append_skip(Subimagen* list, int pos, int size){
+void append_to_skip(Subimagen* list, int pos, int size){
   Subimagen *last = list;
   while (last->skip) {
     last = last->skip;
@@ -76,6 +77,19 @@ int destroy_table(Subimagen** table, int len){
       skips_destroy(table[i]);
     }  
   }
+}
+
+
+int hash_func(int key, int table_size) {
+  return key % table_size;
+}
+
+
+void insert(int key, Subimagen** hash_table, int table_size) {
+  int hashIndex = hash_func(key, table_size);
+	
+  // logica de inserción
+  
 }
 
 int main(int argc, char** argv)
