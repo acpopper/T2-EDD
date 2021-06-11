@@ -63,16 +63,17 @@ int list_destroy(Subimagen *list){
   free(list);
 }
 
+int skips_destroy(Subimagen *list){
+  if (list->skip){
+    skips_destroy(list->skip);
+  }
+  list_destroy(list);
+}
+
 int destroy_table(Subimagen** table, int len){
   for(int i=0; i<len; i++){
     if(table[i]){
-      Subimagen* current = table[i];
-      Subimagen* siguiente = current->skip;
-      while(siguiente){
-        list_destroy(current);
-        Subimagen* current = siguiente;
-        siguiente = siguiente->skip;
-      }
+      skips_destroy(table[i]);
     }  
   }
 }
