@@ -8,6 +8,74 @@
 #define WHITE 127
 #define GRAY 64
 
+struct subimagen;
+typedef struct subimagen Subimagen;
+
+struct subimagen {
+  int size;
+  int pos;
+  Subimagen* next;
+  Subimagen* skip;
+} ;
+
+Subimagen* subimagen_init(int pos, int size){
+  Subimagen* subimagen = malloc(sizeof(Subimagen));
+
+  *subimagen = (Subimagen) {
+    .pos = pos,
+    .size = size,
+    .next = NULL,
+    .skip = NULL,
+  };
+  return subimagen;
+}
+
+
+void list_print(Subimagen* subimagen){
+  printf("pos %i, size %i -> ", subimagen->pos, subimagen->size);
+  if (!subimagen->next){
+    printf("\n");
+  }
+  else{
+    list_print(subimagen->next);
+  }
+}
+
+void add_to_list(Subimagen* first, int pos, int size){
+  Subimagen* second = list_init(pos, size);
+  second->next=first->next;
+  first->next=second;
+}
+
+void append_skip(Subimagen* list, int pos, int size){
+  Subimagen *last = list;
+  while (last->skip) {
+    last = last->skip;
+  }
+  Subimagen *new_list = list_init(pos, size);
+  last->skip = new_list;
+}
+
+int list_destroy(Subimagen *list){
+  if (list->next){
+    list_destroy(list->next);
+  }
+  free(list);
+}
+
+int destroy_table(Subimagen** table, int len){
+  for(int i=0; i<len; i++){
+    if(table[i]){
+      Subimagen* current = table[i];
+      Subimagen* siguiente = current->skip;
+      while(siguiente){
+        list_destroy(current);
+        Subimagen* current = siguiente;
+        siguiente = siguiente->skip;
+      }
+    }  
+  }
+}
 
 int main(int argc, char** argv)
 {  
