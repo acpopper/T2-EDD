@@ -85,9 +85,11 @@ int hash_key(int* pixels, int width, int height){
   if(width == 2){
     for(int i=0; i<4; i++){
       if(pixels[i]){
+        // printf("it %i\n", i);
         num+=1<<i;
       }
     }
+    // printf("2x2: %i\n", num);
     return num;
   }
   else {
@@ -139,14 +141,15 @@ int hash_key(int* pixels, int width, int height){
     //   printf("%i ", pixels_D[i]);
     // }
     // printf("\n");
-    int A = hash_key(pixels, width-1, height-1);
-    int B = hash_key(pixels, width-1, height-1);
-    int C = hash_key(pixels, width-1, height-1);
-    int D = hash_key(pixels, width-1, height-1);
+    int A = hash_key(pixels_A, width-1, height-1);
+    int B = hash_key(pixels_B, width-1, height-1);
+    int C = hash_key(pixels_C, width-1, height-1);
+    int D = hash_key(pixels_D, width-1, height-1);
     free(pixels_A);
     free(pixels_B);
     free(pixels_C);
     free(pixels_D);
+    // printf("A %i, B %i, C %i, D %i\n", A,B,C,D);
     return A*LUCKY+B*LUCKY*LUCKY+C*LUCKY*LUCKY*LUCKY+D*LUCKY*LUCKY*LUCKY*LUCKY;
     // return 0;
   }
@@ -190,31 +193,32 @@ int main(int argc, char** argv)
     printf("Donde:\n");
     printf("\tINPUT es la ruta del archivo de input\n");
     // testing
-  //   Image* e = malloc(sizeof(Image));
-  //   *e = (Image) {
-  //   .width = 4,
-  //   .height = 4,
-  //   .pixel_count = 16,
-  //   .pixels=calloc(16, sizeof(int))
-  // };
-  //   e->pixels[0]=0;
-  //   e->pixels[1]=1;
-  //   e->pixels[2]=2;
-  //   e->pixels[3]=3;
-  //   e->pixels[4]=4;
-  //   e->pixels[5]=5;
-  //   e->pixels[6]=6;
-  //   e->pixels[7]=7;
-  //   e->pixels[8]=8;
-  //   e->pixels[9]=9;
-  //   e->pixels[10]=10;
-  //   e->pixels[11]=11;
-  //   e->pixels[12]=12;
-  //   e->pixels[13]=13;
-  //   e->pixels[14]=14;
-  //   e->pixels[15]=15;
-  //   hash_key(e->pixels, e->width, e->height);
-  //   img_png_destroy(e);
+    Image* e = malloc(sizeof(Image));
+    *e = (Image) {
+    .width = 3,
+    .height = 3,
+    .pixel_count = 9,
+    .pixels=calloc(9, sizeof(int))
+  };
+    e->pixels[0]=1;
+    e->pixels[1]=0;
+    e->pixels[2]=0;
+    e->pixels[3]=0;
+    e->pixels[4]=1;
+    e->pixels[5]=1;
+    e->pixels[6]=1;
+    e->pixels[7]=0;
+    e->pixels[8]=0;
+    // e->pixels[9]=9;
+    // e->pixels[10]=10;
+    // e->pixels[11]=11;
+    // e->pixels[12]=12;
+    // e->pixels[13]=13;
+    // e->pixels[14]=14;
+    // e->pixels[15]=15;
+    printf("%i\n",hash_key(e->pixels, e->width, e->height));
+
+    img_png_destroy(e);
 
     return 1;
   }
