@@ -8,7 +8,7 @@
 #define WHITE 127
 #define GRAY 64
 
-#define LUCKY_NUMBER 13
+#define LUCKY 13
 
 struct subimagen;
 typedef struct subimagen Subimagen;
@@ -80,17 +80,77 @@ void destroy_table(Subimagen** table, int len){
 }
 
 
-int hash_key(Image* imagen){
+int hash_key(int* pixels, int width, int height){
   int num=0;
-  if(imagen->width == 2){
+  if(width == 2){
     for(int i=0; i<4; i++){
-      if(imagen->pixels[i]){
+      if(pixels[i]){
         num+=1<<i;
       }
     }
     return num;
   }
-  return 0;
+  else {
+    int* pixels_A = malloc(((width-1)*(height-1))*sizeof(int));
+    int* pixels_B = malloc(((width-1)*(height-1))*sizeof(int));
+    int* pixels_C = malloc(((width-1)*(height-1))*sizeof(int));
+    int* pixels_D = malloc(((width-1)*(height-1))*sizeof(int));
+    int hugh_jackman=0;
+    for(int i=0; i<width-1; i++){
+      for(int j=0; j<width-1; j++){
+        pixels_A[hugh_jackman]=pixels[width*i+j];
+        hugh_jackman+=1;
+      }
+    }
+    hugh_jackman=0;
+    for(int i=0; i<width-1; i++){
+      for(int j=1; j<width; j++){
+        pixels_B[hugh_jackman]=pixels[width*i+j];
+        hugh_jackman+=1;
+      }
+    }
+    hugh_jackman=0;
+    for(int i=1; i<width; i++){
+      for(int j=0; j<width-1; j++){
+        pixels_C[hugh_jackman]=pixels[(width)*i+j];
+        hugh_jackman+=1;
+      }
+    }
+    hugh_jackman=0;
+    for(int i=1; i<width; i++){
+      for(int j=1; j<width; j++){
+        pixels_D[hugh_jackman]=pixels[width*i+j];
+        hugh_jackman+=1;
+      }
+    }
+    // for(int i=0; i<((width-1)*(width-1));i++){
+    //   printf("%i ", pixels_A[i]);
+    // }
+    // printf("\n");
+    // for(int i=0; i<((width-1)*(width-1));i++){
+    //   printf("%i ", pixels_B[i]);
+    // }
+    // printf("\n");
+    // for(int i=0; i<((width-1)*(width-1));i++){
+    //   printf("%i ", pixels_C[i]);
+    // }
+    // printf("\n");
+    // for(int i=0; i<((width-1)*(width-1));i++){
+    //   printf("%i ", pixels_D[i]);
+    // }
+    // printf("\n");
+    int A = hash_key(pixels, width-1, height-1);
+    int B = hash_key(pixels, width-1, height-1);
+    int C = hash_key(pixels, width-1, height-1);
+    int D = hash_key(pixels, width-1, height-1);
+    free(pixels_A);
+    free(pixels_B);
+    free(pixels_C);
+    free(pixels_D);
+    return A*LUCKY+B*LUCKY*LUCKY+C*LUCKY*LUCKY*LUCKY+D*LUCKY*LUCKY*LUCKY*LUCKY;
+    // return 0;
+  }
+  
 }
 
 int hash_func(int pos, int size, Subimagen** hash_table, int table_size) {
@@ -132,16 +192,28 @@ int main(int argc, char** argv)
     // testing
   //   Image* e = malloc(sizeof(Image));
   //   *e = (Image) {
-  //   .width = 2,
-  //   .height = 2,
-  //   .pixel_count = 4,
-  //   .pixels=calloc(4, sizeof(int))
+  //   .width = 4,
+  //   .height = 4,
+  //   .pixel_count = 16,
+  //   .pixels=calloc(16, sizeof(int))
   // };
   //   e->pixels[0]=0;
-  //   e->pixels[1]=0;
-  //   e->pixels[2]=0;
-  //   e->pixels[3]=0;
-  //   printf("num %i\n", hash_key(e));
+  //   e->pixels[1]=1;
+  //   e->pixels[2]=2;
+  //   e->pixels[3]=3;
+  //   e->pixels[4]=4;
+  //   e->pixels[5]=5;
+  //   e->pixels[6]=6;
+  //   e->pixels[7]=7;
+  //   e->pixels[8]=8;
+  //   e->pixels[9]=9;
+  //   e->pixels[10]=10;
+  //   e->pixels[11]=11;
+  //   e->pixels[12]=12;
+  //   e->pixels[13]=13;
+  //   e->pixels[14]=14;
+  //   e->pixels[15]=15;
+  //   hash_key(e->pixels, e->width, e->height);
   //   img_png_destroy(e);
 
     return 1;
@@ -175,7 +247,6 @@ int main(int argc, char** argv)
     /* Abrimos la imagen de consulta de input */
     Image* query_image = img_png_read_from_file(query_in);
 
-    hash_key(query_image);
 
     /* Creamos una nueva imagen en blanco con las mismas dimensiones que la original */
     Image *out_image = calloc(1, sizeof(Image));
