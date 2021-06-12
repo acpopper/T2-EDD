@@ -43,7 +43,7 @@ void list_print(Subimagen* subimagen){
 }
 
 void append_to_list(Subimagen* first, int pos, int size){
-  Subimagen* second = list_init(pos, size);
+  Subimagen* second = subimagen_init(pos, size);
   second->next=first->next;
   first->next=second;
 }
@@ -53,25 +53,25 @@ void append_to_skip(Subimagen* list, int pos, int size){
   while (last->skip) {
     last = last->skip;
   }
-  Subimagen *new_list = list_init(pos, size);
+  Subimagen *new_list = subimagen_init(pos, size);
   last->skip = new_list;
 }
 
-int list_destroy(Subimagen *list){
+void list_destroy(Subimagen *list){
   if (list->next){
     list_destroy(list->next);
   }
   free(list);
 }
 
-int skips_destroy(Subimagen *list){
+void skips_destroy(Subimagen *list){
   if (list->skip){
     skips_destroy(list->skip);
   }
   list_destroy(list);
 }
 
-int destroy_table(Subimagen** table, int len){
+void destroy_table(Subimagen** table, int len){
   for(int i=0; i<len; i++){
     if(table[i]){
       skips_destroy(table[i]);
@@ -79,6 +79,19 @@ int destroy_table(Subimagen** table, int len){
   }
 }
 
+
+int hash_key(Image* imagen){
+  int num=0;
+  if(imagen->width == 2){
+    for(int i=0; i<4; i++){
+      if(imagen->pixels[i]){
+        num+=1<<i;
+      }
+    }
+    return num;
+  }
+  return 0;
+}
 
 int hash_func(int pos, int size, Subimagen** hash_table, int table_size) {
   int key = pos*size; // OBIAMENTE EDITAR ESTA WEA CON LA HASH FUNC CORRECTA
@@ -101,7 +114,7 @@ void insert(int pos, int size, Subimagen** hash_table, int table_size) {
     while(current){
       if(mismo_patron(pos, size, current->pos, current->size)){
         append_to_list(hash_table[hashIndex], pos, size);
-        return 0;
+        return;
       }
       current=current->skip;
     }
@@ -116,6 +129,21 @@ int main(int argc, char** argv)
     printf("Modo de uso: %s INPUT \n", argv[0]);
     printf("Donde:\n");
     printf("\tINPUT es la ruta del archivo de input\n");
+    // testing
+  //   Image* e = malloc(sizeof(Image));
+  //   *e = (Image) {
+  //   .width = 2,
+  //   .height = 2,
+  //   .pixel_count = 4,
+  //   .pixels=calloc(4, sizeof(int))
+  // };
+  //   e->pixels[0]=0;
+  //   e->pixels[1]=0;
+  //   e->pixels[2]=0;
+  //   e->pixels[3]=0;
+  //   printf("num %i\n", hash_key(e));
+  //   img_png_destroy(e);
+
     return 1;
   }
 
@@ -147,7 +175,7 @@ int main(int argc, char** argv)
     /* Abrimos la imagen de consulta de input */
     Image* query_image = img_png_read_from_file(query_in);
 
-
+    hash_key(query_image);
 
     /* Creamos una nueva imagen en blanco con las mismas dimensiones que la original */
     Image *out_image = calloc(1, sizeof(Image));
