@@ -203,10 +203,10 @@ Subimagen** insert(int indice, int pos, int width, int* pixels, Subimagen** hash
       current=current->skip;
     }
     if(mismo_patron(pixels, width, current, pared)){
-      hash_table = append_to_list(current, pos, width);
+      append_to_list(current, pos, width);
       return hash_table;
     }
-    hash_table = append_to_skip(current, pos, width);
+    append_to_skip(current, pos, width);
     return hash_table;
   }
 } 
