@@ -157,7 +157,7 @@ u_int32_t hash_key(int* pixels, int width){
   
 }
 
-u_int32_t hash_func(int* pixels, int width, int table_size) { // Solo para insectos
+u_int32_t hash_func(int* pixels, int width, int table_size) { 
   u_int32_t key = hash_key(pixels, width);
   return key % table_size;
 }
@@ -176,74 +176,24 @@ int insert(int indice, int pos, int width, int* pixels, Subimagen*** table, int*
   return 0;
 }
 
-u_int32_t hash_pared(int* pixels, int width, int pos, Subimagen** table, int table_size, Image* pared){
-  int num=0;
-  if(width == 2){
-    for(int i=0; i<4; i++){
-      if(pixels[i]){
-        num+=1<<i;
+u_int32_t hash_pared(Image* pared, int table_size){
+  int total=pared->pixel_count;
+  int w = pared->width;
+  int count = w;
+  for(int i=2; i<w; i++){
+      for(int j=0; j<(w*w); j++){
+          int sub[i*i];
+          if(w-j%w<i || floor(j/w)+i>w){
+              
+              printf("invalid pos %i w %i\n", j, i);
+              continue;
+          }
+          else {
+              
+          }
       }
-    }
-    printf("num %i\n", num);
-    u_int32_t indice = num%table_size;
-    // *table = insert(indice, pos, width, pixels, &table, pared->pixels);
-    insert(indice, pos, width, pixels, &table, pared->pixels);
-    return num;
   }
-  else {
-    // spliteo la matriz en sus 4 esquinas
-    int* pixels_A = malloc(((width-1)*(width-1))*sizeof(int));
-    int* pixels_B = malloc(((width-1)*(width-1))*sizeof(int));
-    int* pixels_C = malloc(((width-1)*(width-1))*sizeof(int));
-    int* pixels_D = malloc(((width-1)*(width-1))*sizeof(int));
-    int hugh_jackman=0;
-    for(int i=0; i<width-1; i++){
-      for(int j=0; j<width-1; j++){
-        pixels_A[hugh_jackman]=pixels[width*i+j];
-        hugh_jackman+=1;
-      }
-    }
-    hugh_jackman=0;
-    for(int i=0; i<width-1; i++){
-      for(int j=1; j<width; j++){
-        pixels_B[hugh_jackman]=pixels[width*i+j];
-        hugh_jackman+=1;
-      }
-    }
-    hugh_jackman=0;
-    for(int i=1; i<width; i++){
-      for(int j=0; j<width-1; j++){
-        pixels_C[hugh_jackman]=pixels[(width)*i+j];
-        hugh_jackman+=1;
-      }
-    }
-    hugh_jackman=0;
-    for(int i=1; i<width; i++){
-      for(int j=1; j<width; j++){
-        pixels_D[hugh_jackman]=pixels[width*i+j];
-        hugh_jackman+=1;
-      }
-    }
-    // recursion
-    int A = hash_pared(pixels_A, width-1, pos, table, table_size, pared);
-    int B = hash_pared(pixels_B, width-1, pos, table, table_size, pared);
-    int C = hash_pared(pixels_C, width-1, pos, table, table_size, pared);
-    int D = hash_pared(pixels_D, width-1, pos, table, table_size, pared);
-    u_int32_t hash_key = (A*LUCKY+B*LUCKY*LUCKY+C*LUCKY*LUCKY*LUCKY+D*LUCKY*LUCKY*LUCKY*LUCKY)&0xFFFFFFFF;
-    u_int32_t indice = hash_key%table_size;
-    if(width<pared->width){
-      // *table = insert(indice, pos, width, pixels, &table, pared->pixels);
-      printf("num 3x3 %u\n", hash_key);
-      insert(indice, pos, width, pixels, &table, pared->pixels);
-    }
-    //libero memoria de los subarreglos
-    free(pixels_A);
-    free(pixels_B);
-    free(pixels_C);
-    free(pixels_D);
-    
-    return hash_key;
-  }
+  
   
 }
 
@@ -252,14 +202,14 @@ void create_table(Image* pared){ // retorna Subimagen**
   for(int i=2; i < (pared->width); i++) {
         table_size += i*i;
     }
-  printf("TABLE SIZE %i\n", table_size);
-  table_size=floor(table_size/10);
-  printf("TABLE SIZE %i\n", table_size);
-  Subimagen** hash_table = calloc(table_size, sizeof(Subimagen*));
-  hash_pared(pared->pixels, pared->width, 0, hash_table, table_size, pared);
+  // printf("TABLE SIZE %i\n", table_size);
+  table_size=floor(table_size/5);
+  // printf("TABLE SIZE %i\n", table_size);
+  // Subimagen** hash_table = calloc(table_size, sizeof(Subimagen*));
+  hash_pared(pared, table_size);
 
 
-  free(hash_table);
+  
 }
 
 
