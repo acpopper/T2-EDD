@@ -283,7 +283,7 @@ int main(int argc, char** argv)
   for(int i=2; i < (image->width); i++) {
         table_size += i*i;
     }
-  // se toma un 20% del total posible
+  // se toma un 20% del total maximo posible
   table_size=floor(table_size/5);
 
 
