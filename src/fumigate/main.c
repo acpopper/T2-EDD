@@ -321,6 +321,13 @@ int main(int argc, char** argv)
     // fácilmente los pixeles en la imagen original, o en este caso en la copia)
     u_int32_t indice_insecto = hash_func(query_image->pixels, query_image->width, table_size);
     Subimagen* patron = hash_table[indice_insecto];
+    // recorro patrones de mismo indice hasta encontrar el mismo del insecto
+    while(patron){
+      if(mismo_patron(query_image->pixels, query_image->width, patron, image)){
+        break;
+      }
+      patron=patron->skip;
+    }
 
     while(patron){
       int pos = patron->pos;
