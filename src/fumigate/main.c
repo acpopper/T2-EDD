@@ -246,15 +246,13 @@ u_int32_t hash_pared(int* pixels, int width, int pos, Subimagen** table, int tab
 }
 
 void create_table(Image* pared){ // retorna Subimagen**
-  int table_size;
-  for(int i=2; i < (pared->width-1); i++) {
+  int table_size=0;
+  for(int i=2; i < (pared->width); i++) {
         table_size += i*i;
     }
-  printf("Table size %i\n", table_size);
   table_size=floor(table_size/10);
-  printf("Table size %i\n", table_size);
   Subimagen** hash_table = calloc(table_size, sizeof(Subimagen*));
-  // hash_pared(pared->pixels, pared->width, 0, hash_table, table_size, pared);
+  hash_pared(pared->pixels, pared->width, 0, hash_table, table_size, pared);
 
 
   free(hash_table);
@@ -271,10 +269,10 @@ int main(int argc, char** argv)
     // testing
     Image* e = malloc(sizeof(Image));
     *e = (Image) {
-    .width = 3,
-    .height = 3,
-    .pixel_count = 9,
-    .pixels=calloc(9, sizeof(int))
+    .width = 4,
+    .height = 4,
+    .pixel_count = 16,
+    .pixels=calloc(16, sizeof(int))
   };
     e->pixels[0]=0;
     e->pixels[1]=1;
@@ -285,13 +283,13 @@ int main(int argc, char** argv)
     e->pixels[6]=0;
     e->pixels[7]=1;
     e->pixels[8]=0;
-    // e->pixels[9]=0;
-    // e->pixels[10]=0;
-    // e->pixels[11]=0;
-    // e->pixels[12]=0;
-    // e->pixels[13]=0;
-    // e->pixels[14]=0;
-    // e->pixels[15]=1;
+    e->pixels[9]=0;
+    e->pixels[10]=0;
+    e->pixels[11]=0;
+    e->pixels[12]=0;
+    e->pixels[13]=0;
+    e->pixels[14]=0;
+    e->pixels[15]=1;
   //   printf("%u\n",hash_key(e->pixels, e->width, e->height));
     create_table(e);
     img_png_destroy(e);
