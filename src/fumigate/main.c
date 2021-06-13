@@ -166,50 +166,60 @@ bool mismo_patron(){
   return true;
 }
 
-int insert(int indice, int pos, int width, int* pixels, Subimagen*** table, int* pared_pixels) { // retorna Subimagen**
-  printf("Insertando indice %i, pos %i, width %i en tabla\n", indice, pos, width);
-  printf("Pixeles: ");
-  for(int i=0; i<(width*width);i++){
-    printf("%i", pixels[i]);
-  }
-  printf("\n");
-  return 0;
+Subimagen** insert(int indice, int pos, int width, int* pixels, Subimagen** hash_table, int* pared_pixels) {
+  // Si no hay nada en esa posición, se crea un nodo y se apunta a el
+  if(!hash_table[indice]){
+    Subimagen* new = subimagen_init(pos, width);
+    hash_table[indice] = new;
+  } // Si hay un nodo, se revisa si es el mismo patrón o si cayó ahí por la función. Dependiendo de eso cómo se agrega.
+
+
+
+  return hash_table;
 }
 
-u_int32_t hash_pared(Image* pared, int table_size){
+Subimagen** hash_pared(Image* pared, int table_size){
+  Subimagen** hash_table = calloc(table_size, sizeof(Subimagen*));
   int total=pared->pixel_count;
   int w = pared->width;
-  int count = w;
+  // j=posicion i=size
   for(int i=2; i<w; i++){
-      for(int j=0; j<(w*w); j++){
-          int sub[i*i];
-          if(w-j%w<i || floor(j/w)+i>w){
-              
-              printf("invalid pos %i w %i\n", j, i);
-              continue;
-          }
-          else {
-              
-          }
+    for(int j=0; j<(w*w); j++){
+      int sub[i*i];
+      if(w-j%w<i || floor(j/w)+i>w){
+          // printf("invalid pos %i w %i\n", j, i);
+          continue;
       }
+      else {
+        int c=0;
+          for(int f=0; f<i; f++){
+            for(int g=0; g<i; g++){
+              sub[c]=pared->pixels[j+f*w+g];
+              // printf("%i ", sub[c]);
+              c+=1;
+            }
+          }
+          // printf("\n");
+        u_int32_t indice = hash_func(sub, i, table_size);
+        hash_table = insert(indice, j, i, sub, hash_table, pared);
+      }
+    }
   }
-  
-  
+  return hash_table;
 }
 
-void create_table(Image* pared){ // retorna Subimagen**
+Subimagen** create_table(Image* pared){ // retorna Subimagen**
   int table_size=0;
+  // total de combinaciones posibles con las casillas
   for(int i=2; i < (pared->width); i++) {
         table_size += i*i;
     }
-  // printf("TABLE SIZE %i\n", table_size);
+  // se toma un 20% del total posible
   table_size=floor(table_size/5);
   // printf("TABLE SIZE %i\n", table_size);
-  // Subimagen** hash_table = calloc(table_size, sizeof(Subimagen*));
-  hash_pared(pared, table_size);
-
-
-  
+  // Se crea la tabla que se retornará
+  Subimagen** hash_table = hash_pared(pared, table_size);
+  return hash_table;
 }
 
 
