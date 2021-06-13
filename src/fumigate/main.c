@@ -263,34 +263,6 @@ int main(int argc, char** argv)
     printf("Modo de uso: %s INPUT \n", argv[0]);
     printf("Donde:\n");
     printf("\tINPUT es la ruta del archivo de input\n");
-    // testing
-  //   Image* e = malloc(sizeof(Image));
-  //   *e = (Image) {
-  //   .width = 4,
-  //   .height = 4,
-  //   .pixel_count = 16,
-  //   .pixels=calloc(16, sizeof(int))
-  // };
-  //   e->pixels[0]=0;
-  //   e->pixels[1]=1;
-  //   e->pixels[2]=0;
-  //   e->pixels[3]=1;
-  //   e->pixels[4]=1;
-  //   e->pixels[5]=0;
-  //   e->pixels[6]=0;
-  //   e->pixels[7]=1;
-  //   e->pixels[8]=0;
-  //   e->pixels[9]=0;
-  //   e->pixels[10]=0;
-  //   e->pixels[11]=0;
-  //   e->pixels[12]=0;
-  //   e->pixels[13]=0;
-  //   e->pixels[14]=0;
-  //   e->pixels[15]=1;
-  // //   printf("%u\n",hash_key(e->pixels, e->width, e->height));
-  //   create_table(e);
-  //   img_png_destroy(e);
-
     return 1;
   }
 
@@ -304,7 +276,15 @@ int main(int argc, char** argv)
   Image* image = img_png_read_from_file(filename);
 
   /* Aca puedes crear la tabla de hash */
-  create_table(image);
+  Subimagen** hash_table =  create_table(image);
+
+  int table_size=0;
+  // total de combinaciones posibles con las casillas
+  for(int i=2; i < (image->width); i++) {
+        table_size += i*i;
+    }
+  // se toma un 20% del total posible
+  table_size=floor(table_size/5);
 
 
   /* Leemos cada una de las consultas */
@@ -330,16 +310,31 @@ int main(int argc, char** argv)
     out_image->width = image->width;
     out_image->pixel_count = image->pixel_count;
     out_image->pixels = calloc(image->pixel_count, sizeof(int));
+    for(int i=0; i<image->pixel_count; i++){
+      out_image->pixels[i] = image->pixels[i];
+    }
 
 
 
-    /* pintamos los pixeles de su color final (borrar las siguientes tres lineas)*/
-      out_image->pixels[0] = BLACK;
-      out_image->pixels[4] = WHITE; 
-      out_image->pixels[5] = GRAY;
+    /* pintamos los pixeles de su color final*/
+    // Se encuentra el patrón (lista ligada donde cada nodo guarda la posicion y width, así se ubican
+    // fácilmente los pixeles en la imagen original, o en este caso en la copia)
+    u_int32_t indice_insecto = hash_func(query_image->pixels, query_image->width, table_size);
+    Subimagen* patron = hash_table[indice_insecto];
 
-
-
+    while(patron){
+      int pos = patron->pos;
+      int w = patron->size;
+      int w_pared = image->width;
+      for(int i=0; i<w; i++){
+          for(int j=0; j<w; j++){
+              out_image->pixels[pos+j+w_pared*i]=GRAY;
+          }
+      }
+      patron=patron->next;
+    }
+    
+    
     /* Escribimos la imagen de output*/
     img_png_write_to_file(out_image, query_out);
 
