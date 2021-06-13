@@ -184,6 +184,7 @@ u_int32_t hash_pared(int* pixels, int width, int pos, Subimagen** table, int tab
         num+=1<<i;
       }
     }
+    printf("num %i\n", num);
     u_int32_t indice = num%table_size;
     // *table = insert(indice, pos, width, pixels, &table, pared->pixels);
     insert(indice, pos, width, pixels, &table, pared->pixels);
@@ -232,6 +233,7 @@ u_int32_t hash_pared(int* pixels, int width, int pos, Subimagen** table, int tab
     u_int32_t indice = hash_key%table_size;
     if(width<pared->width){
       // *table = insert(indice, pos, width, pixels, &table, pared->pixels);
+      printf("num 3x3 %u\n", hash_key);
       insert(indice, pos, width, pixels, &table, pared->pixels);
     }
     //libero memoria de los subarreglos
@@ -250,7 +252,9 @@ void create_table(Image* pared){ // retorna Subimagen**
   for(int i=2; i < (pared->width); i++) {
         table_size += i*i;
     }
+  printf("TABLE SIZE %i\n", table_size);
   table_size=floor(table_size/10);
+  printf("TABLE SIZE %i\n", table_size);
   Subimagen** hash_table = calloc(table_size, sizeof(Subimagen*));
   hash_pared(pared->pixels, pared->width, 0, hash_table, table_size, pared);
 
@@ -267,32 +271,32 @@ int main(int argc, char** argv)
     printf("Donde:\n");
     printf("\tINPUT es la ruta del archivo de input\n");
     // testing
-    Image* e = malloc(sizeof(Image));
-    *e = (Image) {
-    .width = 4,
-    .height = 4,
-    .pixel_count = 16,
-    .pixels=calloc(16, sizeof(int))
-  };
-    e->pixels[0]=0;
-    e->pixels[1]=1;
-    e->pixels[2]=0;
-    e->pixels[3]=1;
-    e->pixels[4]=1;
-    e->pixels[5]=0;
-    e->pixels[6]=0;
-    e->pixels[7]=1;
-    e->pixels[8]=0;
-    e->pixels[9]=0;
-    e->pixels[10]=0;
-    e->pixels[11]=0;
-    e->pixels[12]=0;
-    e->pixels[13]=0;
-    e->pixels[14]=0;
-    e->pixels[15]=1;
-  //   printf("%u\n",hash_key(e->pixels, e->width, e->height));
-    create_table(e);
-    img_png_destroy(e);
+  //   Image* e = malloc(sizeof(Image));
+  //   *e = (Image) {
+  //   .width = 4,
+  //   .height = 4,
+  //   .pixel_count = 16,
+  //   .pixels=calloc(16, sizeof(int))
+  // };
+  //   e->pixels[0]=0;
+  //   e->pixels[1]=1;
+  //   e->pixels[2]=0;
+  //   e->pixels[3]=1;
+  //   e->pixels[4]=1;
+  //   e->pixels[5]=0;
+  //   e->pixels[6]=0;
+  //   e->pixels[7]=1;
+  //   e->pixels[8]=0;
+  //   e->pixels[9]=0;
+  //   e->pixels[10]=0;
+  //   e->pixels[11]=0;
+  //   e->pixels[12]=0;
+  //   e->pixels[13]=0;
+  //   e->pixels[14]=0;
+  //   e->pixels[15]=1;
+  // //   printf("%u\n",hash_key(e->pixels, e->width, e->height));
+  //   create_table(e);
+  //   img_png_destroy(e);
 
     return 1;
   }
@@ -307,6 +311,7 @@ int main(int argc, char** argv)
   Image* image = img_png_read_from_file(filename);
 
   /* Aca puedes crear la tabla de hash */
+  create_table(image);
 
 
   /* Leemos cada una de las consultas */
