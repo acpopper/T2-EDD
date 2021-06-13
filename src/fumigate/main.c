@@ -50,12 +50,8 @@ void append_to_list(Subimagen* first, int pos, int size){
 }
 
 void append_to_skip(Subimagen* list, int pos, int size){
-  Subimagen *last = list;
-  while (last->skip) {
-    last = last->skip;
-  }
   Subimagen *new_list = subimagen_init(pos, size);
-  last->skip = new_list;
+  list->skip = new_list;
 }
 
 void list_destroy(Subimagen *list){
@@ -162,21 +158,58 @@ u_int32_t hash_func(int* pixels, int width, int table_size) {
   return key % table_size;
 }
 
-bool mismo_patron(){
+bool mismo_patron(int* pixels, int width, Subimagen* current, Image* pared){
+  if(width != current->size){
+    return false;
+  }
+  int pos = current->pos;
+  int w = current->size;
+  int w_pared = pared->width;
+  int* current_pixels = calloc(w*w, sizeof(int));
+  int c=0;
+  for(int i=0; i<w; i++){
+      for(int j=0; j<w; j++){
+          current_pixels[c]=pared->pixels[pos+j+w_pared*i];
+          // printf("%i ", current_pixels[c]);
+          c+=1;
+          
+      }
+      // printf("\n");
+  }
+  for(int i=0; i<w*w; i++){
+    if(pixels[i]!=current_pixels[i]){
+      free(current_pixels);
+      return false;
+    }
+  }
   return true;
 }
 
-Subimagen** insert(int indice, int pos, int width, int* pixels, Subimagen** hash_table, int* pared_pixels) {
+Subimagen** insert(int indice, int pos, int width, int* pixels, Subimagen** hash_table, Image* pared) {
   // Si no hay nada en esa posición, se crea un nodo y se apunta a el
   if(!hash_table[indice]){
     Subimagen* new = subimagen_init(pos, width);
     hash_table[indice] = new;
+    return hash_table;
   } // Si hay un nodo, se revisa si es el mismo patrón o si cayó ahí por la función. Dependiendo de eso cómo se agrega.
 
-
-
-  return hash_table;
-}
+  else {
+    Subimagen* current = hash_table[indice];
+    while(current->skip){
+      if(mismo_patron(pixels, width, current, pared)){
+        append_to_list(current, pos, width);
+        return hash_table;
+      }
+      current=current->skip;
+    }
+    if(mismo_patron(pixels, width, current, pared)){
+      hash_table = append_to_list(current, pos, width);
+      return hash_table;
+    }
+    hash_table = append_to_skip(current, pos, width);
+    return hash_table;
+  }
+} 
 
 Subimagen** hash_pared(Image* pared, int table_size){
   Subimagen** hash_table = calloc(table_size, sizeof(Subimagen*));
