@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <math.h>
 #include <stdbool.h>
 #include "../imagelib/image.h"
 
@@ -8,7 +9,7 @@
 #define WHITE 127
 #define GRAY 64
 
-#define LUCKY 13
+#define LUCKY 17
 
 struct subimagen;
 typedef struct subimagen Subimagen;
@@ -80,7 +81,7 @@ void destroy_table(Subimagen** table, int len){
 }
 
 
-int hash_key(int* pixels, int width, int height){
+u_int32_t hash_key(int* pixels, int width){
   int num=0;
   if(width == 2){
     for(int i=0; i<4; i++){
@@ -93,10 +94,10 @@ int hash_key(int* pixels, int width, int height){
     return num;
   }
   else {
-    int* pixels_A = malloc(((width-1)*(height-1))*sizeof(int));
-    int* pixels_B = malloc(((width-1)*(height-1))*sizeof(int));
-    int* pixels_C = malloc(((width-1)*(height-1))*sizeof(int));
-    int* pixels_D = malloc(((width-1)*(height-1))*sizeof(int));
+    int* pixels_A = malloc(((width-1)*(width-1))*sizeof(int));
+    int* pixels_B = malloc(((width-1)*(width-1))*sizeof(int));
+    int* pixels_C = malloc(((width-1)*(width-1))*sizeof(int));
+    int* pixels_D = malloc(((width-1)*(width-1))*sizeof(int));
     int hugh_jackman=0;
     for(int i=0; i<width-1; i++){
       for(int j=0; j<width-1; j++){
@@ -141,49 +142,124 @@ int hash_key(int* pixels, int width, int height){
     //   printf("%i ", pixels_D[i]);
     // }
     // printf("\n");
-    int A = hash_key(pixels_A, width-1, height-1);
-    int B = hash_key(pixels_B, width-1, height-1);
-    int C = hash_key(pixels_C, width-1, height-1);
-    int D = hash_key(pixels_D, width-1, height-1);
+    int A = hash_key(pixels_A, width-1);
+    int B = hash_key(pixels_B, width-1);
+    int C = hash_key(pixels_C, width-1);
+    int D = hash_key(pixels_D, width-1);
     free(pixels_A);
     free(pixels_B);
     free(pixels_C);
     free(pixels_D);
     // printf("A %i, B %i, C %i, D %i\n", A,B,C,D);
-    return A*LUCKY+B*LUCKY*LUCKY+C*LUCKY*LUCKY*LUCKY+D*LUCKY*LUCKY*LUCKY*LUCKY;
+    return (A*LUCKY+B*LUCKY*LUCKY+C*LUCKY*LUCKY*LUCKY+D*LUCKY*LUCKY*LUCKY*LUCKY)&0xFFFFFFFF;
     // return 0;
   }
   
 }
 
-int hash_func(int pos, int size, Subimagen** hash_table, int table_size) {
-  int key = pos*size; // OBIAMENTE EDITAR ESTA WEA CON LA HASH FUNC CORRECTA
+u_int32_t hash_func(int* pixels, int width, int table_size) { // Solo para insectos
+  u_int32_t key = hash_key(pixels, width);
   return key % table_size;
 }
 
-bool mismo_patron(int pos1, int size1, int pos2, int size2){
+bool mismo_patron(){
   return true;
 }
 
-void insert(int pos, int size, Subimagen** hash_table, int table_size) {
-  int hashIndex = hash_func(pos, size, hash_table, table_size);
-  // Si no hay nada en esa posición, se crea un nodo y se apunta a el
-  if(!hash_table[hashIndex]){
-    Subimagen* new = subimagen_init(pos, size);
-    hash_table[hashIndex] = new;
-  } // Si hay un nodo, se revisa si es el mismo patrón o si cayó ahí por la función. Dependiendo de eso cómo se agrega.
-  else {
-    Subimagen* current = hash_table[hashIndex];
-    while(current){
-      if(mismo_patron(pos, size, current->pos, current->size)){
-        append_to_list(hash_table[hashIndex], pos, size);
-        return;
-      }
-      current=current->skip;
-    }
-    append_to_skip(current, pos, size);
-  } 
+int insert(int indice, int pos, int width, int* pixels, Subimagen*** table, int* pared_pixels) { // retorna Subimagen**
+  printf("Insertando indice %i, pos %i, width %i en tabla\n", indice, pos, width);
+  printf("Pixeles: ");
+  for(int i=0; i<(width*width);i++){
+    printf("%i", pixels[i]);
+  }
+  printf("\n");
+  return 0;
 }
+
+u_int32_t hash_pared(int* pixels, int width, int pos, Subimagen** table, int table_size, Image* pared){
+  int num=0;
+  if(width == 2){
+    for(int i=0; i<4; i++){
+      if(pixels[i]){
+        num+=1<<i;
+      }
+    }
+    u_int32_t indice = num%table_size;
+    // *table = insert(indice, pos, width, pixels, &table, pared->pixels);
+    insert(indice, pos, width, pixels, &table, pared->pixels);
+    return num;
+  }
+  else {
+    // spliteo la matriz en sus 4 esquinas
+    int* pixels_A = malloc(((width-1)*(width-1))*sizeof(int));
+    int* pixels_B = malloc(((width-1)*(width-1))*sizeof(int));
+    int* pixels_C = malloc(((width-1)*(width-1))*sizeof(int));
+    int* pixels_D = malloc(((width-1)*(width-1))*sizeof(int));
+    int hugh_jackman=0;
+    for(int i=0; i<width-1; i++){
+      for(int j=0; j<width-1; j++){
+        pixels_A[hugh_jackman]=pixels[width*i+j];
+        hugh_jackman+=1;
+      }
+    }
+    hugh_jackman=0;
+    for(int i=0; i<width-1; i++){
+      for(int j=1; j<width; j++){
+        pixels_B[hugh_jackman]=pixels[width*i+j];
+        hugh_jackman+=1;
+      }
+    }
+    hugh_jackman=0;
+    for(int i=1; i<width; i++){
+      for(int j=0; j<width-1; j++){
+        pixels_C[hugh_jackman]=pixels[(width)*i+j];
+        hugh_jackman+=1;
+      }
+    }
+    hugh_jackman=0;
+    for(int i=1; i<width; i++){
+      for(int j=1; j<width; j++){
+        pixels_D[hugh_jackman]=pixels[width*i+j];
+        hugh_jackman+=1;
+      }
+    }
+    // recursion
+    int A = hash_pared(pixels_A, width-1, pos, table, table_size, pared);
+    int B = hash_pared(pixels_B, width-1, pos, table, table_size, pared);
+    int C = hash_pared(pixels_C, width-1, pos, table, table_size, pared);
+    int D = hash_pared(pixels_D, width-1, pos, table, table_size, pared);
+    u_int32_t hash_key = (A*LUCKY+B*LUCKY*LUCKY+C*LUCKY*LUCKY*LUCKY+D*LUCKY*LUCKY*LUCKY*LUCKY)&0xFFFFFFFF;
+    u_int32_t indice = hash_key%table_size;
+    if(width<pared->width){
+      // *table = insert(indice, pos, width, pixels, &table, pared->pixels);
+      insert(indice, pos, width, pixels, &table, pared->pixels);
+    }
+    //libero memoria de los subarreglos
+    free(pixels_A);
+    free(pixels_B);
+    free(pixels_C);
+    free(pixels_D);
+    
+    return hash_key;
+  }
+  
+}
+
+void create_table(Image* pared){ // retorna Subimagen**
+  int table_size;
+  for(int i=2; i < (pared->width-1); i++) {
+        table_size += i*i;
+    }
+  printf("Table size %i\n", table_size);
+  table_size=floor(table_size/10);
+  printf("Table size %i\n", table_size);
+  Subimagen** hash_table = calloc(table_size, sizeof(Subimagen*));
+  // hash_pared(pared->pixels, pared->width, 0, hash_table, table_size, pared);
+
+
+  free(hash_table);
+}
+
 
 int main(int argc, char** argv)
 {  
@@ -200,24 +276,24 @@ int main(int argc, char** argv)
     .pixel_count = 9,
     .pixels=calloc(9, sizeof(int))
   };
-    e->pixels[0]=1;
-    e->pixels[1]=0;
+    e->pixels[0]=0;
+    e->pixels[1]=1;
     e->pixels[2]=0;
-    e->pixels[3]=0;
+    e->pixels[3]=1;
     e->pixels[4]=1;
-    e->pixels[5]=1;
-    e->pixels[6]=1;
-    e->pixels[7]=0;
+    e->pixels[5]=0;
+    e->pixels[6]=0;
+    e->pixels[7]=1;
     e->pixels[8]=0;
-    // e->pixels[9]=9;
-    // e->pixels[10]=10;
-    // e->pixels[11]=11;
-    // e->pixels[12]=12;
-    // e->pixels[13]=13;
-    // e->pixels[14]=14;
-    // e->pixels[15]=15;
-    printf("%i\n",hash_key(e->pixels, e->width, e->height));
-
+    // e->pixels[9]=0;
+    // e->pixels[10]=0;
+    // e->pixels[11]=0;
+    // e->pixels[12]=0;
+    // e->pixels[13]=0;
+    // e->pixels[14]=0;
+    // e->pixels[15]=1;
+  //   printf("%u\n",hash_key(e->pixels, e->width, e->height));
+    create_table(e);
     img_png_destroy(e);
 
     return 1;
